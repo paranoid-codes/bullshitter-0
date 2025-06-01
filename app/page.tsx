@@ -8,8 +8,7 @@ import UploadHeader from "@/components/upload-header";
 import UploadDropzone from "@/components/upload-dropzone";
 import UploadFileList from "@/components/upload-file-list";
 import UploadStatusSummary from "@/components/upload-status-summary";
-
-
+import { log } from "@/lib/logger";
 
 interface FileUpload {
   id: string;
@@ -33,6 +32,10 @@ export default function FileUploader() {
     }));
 
     setFiles((prev) => [...prev, ...fileUploads]);
+    log("info", "Files added", {
+      count: newFiles.length,
+      names: newFiles.map((f) => f.name),
+    });
   };
 
   const simulateUpload = async (fileUpload: FileUpload) => {
@@ -71,6 +74,11 @@ export default function FileUploader() {
         )
       );
     }
+    if (isSuccess) {
+      log("info", "Upload success", { filename: fileUpload.file.name });
+    } else {
+      log("error", "Upload failed", { filename: fileUpload.file.name });
+    }
   };
 
   const handleUpload = async () => {
@@ -78,8 +86,10 @@ export default function FileUploader() {
     if (pendingFiles.length === 0) return;
 
     setIsUploading(true);
+    log("info", "Upload started", { count: pendingFiles.length });
     await Promise.all(pendingFiles.map(simulateUpload));
     setIsUploading(false);
+    log("info", "Upload completed", { count: pendingFiles.length });
   };
 
   const removeFile = (id: string) => {
